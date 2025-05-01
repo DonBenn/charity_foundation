@@ -29,7 +29,7 @@ try:
 except (NameError, ImportError) as error:
     raise AssertionError(
         'При импорте объектов `current_superuser, current_user` '
-        'из модуля `app.core.user` возникло исключение:\n'
+        'из модуля `app.core.user.py` возникло исключение:\n'
         f'{type(error).__name__}: {error}.'
     )
 

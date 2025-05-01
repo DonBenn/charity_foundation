@@ -4,6 +4,7 @@ from pydantic import BaseSettings
 class Settings(BaseSettings):
     app_title: str = 'Благотворительный фонд'
     database_url: str
+    secret: str = 'SECRET'
 
     class Config:
         env_file = '.env'
