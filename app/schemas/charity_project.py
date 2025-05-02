@@ -17,3 +17,12 @@ class CharityProjectDB(CharityProjectCreate):
 
     class Config:
         orm_mode = True
+
+class CharityProjectUpdate(CharityProjectBase):
+    pass
+
+    @validator('name')
+    def name_cannot_be_null(cls, value):
+        if value is None:
+            raise ValueError('Имя проекта не может быть пустым!')
+        return value
