@@ -1,19 +1,26 @@
-from typing import Optional
+from datetime import datetime
 
 from pydantic import BaseModel, Field, validator
 
 
 class CharityProjectBase(BaseModel):
-    name: Optional[str] = Field(None, min_length=1, max_length=100)
-    description: Optional[str]
+    name: str = Field(..., max_length=100)
+    description: str = Field(...)
+    full_amount: int = Field(...)
 
+    class Config:
+        title = 'Класс для приветствия'
+        min_anystr_length = 2
 
 class CharityProjectCreate(CharityProjectBase):
-    name: str = Field(..., min_length=1, max_length=100)
-
+    pass
 
 class CharityProjectDB(CharityProjectCreate):
     id: int
+    invested_amount: int
+    fully_invested: bool
+    create_date: datetime
+    close_date: datetime
 
     class Config:
         orm_mode = True
