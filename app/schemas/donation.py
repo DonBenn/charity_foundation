@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, validator, root_validator
 
 
 class DonationCreate(BaseModel):
@@ -15,6 +15,7 @@ class DonationCreate(BaseModel):
 class DonationCreatedResponse(DonationCreate):
     id: int = Field(...)
     create_date: datetime = Field(...)
+
 
 class DonationDB(BaseModel):
     id: int

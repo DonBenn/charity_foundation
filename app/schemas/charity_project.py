@@ -8,6 +8,14 @@ class CharityProjectBase(BaseModel):
     description: str = Field(...)
     full_amount: int = Field(...)
 
+    @validator('full_amount')
+    def check_from_create_date_later_than_now(cls, value):
+        if value < 1:
+            raise ValueError(
+                'Сумма должна быть больше 1'
+            )
+        return value
+
     class Config:
         title = 'Класс для приветствия'
         min_anystr_length = 2
@@ -20,25 +28,8 @@ class CharityProjectDB(CharityProjectCreate):
     invested_amount: int
     fully_invested: bool
     create_date: datetime
-    close_date: datetime
+    # close_date: datetime
 
-    @validator('create_date')
-    def check_from_create_date_later_than_now(cls, value):
-        if value <= datetime.now():
-            raise ValueError(
-                'Время создания даты '
-                'не может быть меньше текущего времени'
-            )
-        return value
-
-    @root_validator(skip_on_failure=True)
-    def check_from_create_before_to_close(cls, values):
-        if values['create_date'] >= values['close_date']:
-            raise ValueError(
-                'Время начала создания '
-                'не может быть больше времени окончания'
-            )
-        return values
 
     class Config:
         orm_mode = True
