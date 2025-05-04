@@ -5,6 +5,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db import get_async_session
+from app.core.user import current_superuser
 from app.crud.charity_project import (
     create_charity_project, get_charity_project_by_name,
     get_charity_project_by_id, read_all_charity_projects_from_db,
@@ -16,18 +17,20 @@ from app.schemas.charity_project import (
 from app.models.charity_project import CharityProject
 
 
-router = APIRouter(prefix='/charity_project', tags=['Charity Project'])
+router = APIRouter()
 
 
 @router.post(
     '/',
     response_model=CharityProjectDB,
     response_model_exclude_none=True,
+    dependencies=[Depends(current_superuser)],
 )
 async def create_charity_project(
         charity_project: CharityProjectCreate,
         session: AsyncSession = Depends(get_async_session),
 ):
+    """Только для суперюзеров."""
     await check_name_duplicate(charity_project.name, session)
     new_project = await create_charity_project(charity_project, session)
     return new_project
@@ -48,12 +51,14 @@ async def get_all_charity_projects(
     '/{project_id}',
     response_model=CharityProjectDB,
     response_model_exclude_none=True,
+    dependencies=[Depends(current_superuser)],
 )
 async def partially_update_charity_project(
         project_id: int,
         obj_in: CharityProjectUpdate,
         session: AsyncSession = Depends(get_async_session),
 ):
+    """Только для суперюзеров."""
     charity_project = await check_charity_project_exists(project_id, session)
 
     if obj_in.name is not None:
@@ -67,11 +72,13 @@ async def partially_update_charity_project(
     '/{project_id}',
     response_model=CharityProjectDB,
     response_model_exclude_none=True,
+    dependencies=[Depends(current_superuser)],
 )
 async def remove_charity_project(
         project_id: int,
         session: AsyncSession = Depends(get_async_session),
 ):
+    """Только для суперюзеров."""
     charity_project = await check_charity_project_exists(project_id, session)
     charity_project = await delete_charity_project(charity_project, session)
     return charity_project

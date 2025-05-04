@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, validator, root_validator
 
 
 class CharityProjectBase(BaseModel):
@@ -21,6 +21,24 @@ class CharityProjectDB(CharityProjectCreate):
     fully_invested: bool
     create_date: datetime
     close_date: datetime
+
+    @validator('create_date')
+    def check_from_create_date_later_than_now(cls, value):
+        if value <= datetime.now():
+            raise ValueError(
+                'Время создания даты '
+                'не может быть меньше текущего времени'
+            )
+        return value
+
+    @root_validator(skip_on_failure=True)
+    def check_from_create_before_to_close(cls, values):
+        if values['create_date'] >= values['close_date']:
+            raise ValueError(
+                'Время начала создания '
+                'не может быть больше времени окончания'
+            )
+        return values
 
     class Config:
         orm_mode = True

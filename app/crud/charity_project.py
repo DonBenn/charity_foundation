@@ -44,8 +44,11 @@ async def get_charity_project_by_id(
         session: AsyncSession,
         charity_id: int,
 ) -> Optional[CharityProject]:
-    charity_project = await session.get(CharityProject, charity_id=charity_id)
-    return charity_project
+    db_project = await session.execute(select(CharityProject).where(
+        CharityProject.id == charity_id)
+    )
+    db_project = db_project.scalar().first()
+    return db_project
 
 
 async def update_charity_project(

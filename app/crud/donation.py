@@ -18,7 +18,7 @@ async def create_donation(
 
 
 async def get_by_user(
-        session: AsyncSession, user: User
+        self, session: AsyncSession, user: User
 ):
     donations = await session.execute(
         select(Donation).where(
