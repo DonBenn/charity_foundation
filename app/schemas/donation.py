@@ -7,6 +7,14 @@ class DonationCreate(BaseModel):
     full_amount: int = Field(...)
     comment: Optional[str]
 
+    @validator('full_amount')
+    def check_from_create_date_later_than_now(cls, value):
+        if value < 1:
+            raise ValueError(
+                'Сумма должна быть больше 1'
+            )
+        return value
+
     class Config:
         title = 'Класс для приветствия'
         min_anystr_length = 1
