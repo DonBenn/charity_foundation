@@ -83,6 +83,9 @@ async def remove_charity_project(
 ):
     """Только для суперюзеров."""
     charity_project = await check_charity_project_exists(project_id, session)
+
+    check_project = await check_closed_or_invested_project(project_id, session)
+
     charity_project = await delete_charity_project(charity_project, session)
     return charity_project
 
@@ -124,4 +127,24 @@ async def check_full_amount(
         raise HTTPException(
             status_code=400,
             detail='Нельзя установить требуемую сумму меньше уже вложенной',
+        )
+
+
+async def check_closed_or_invested_project(
+        project_id: int,
+        session: AsyncSession,
+):
+    closed_project = await session.execute(select(CharityProject).where(
+        CharityProject.id == project_id)
+    )
+    closed_project = closed_project.scalar()
+    if closed_project.invested_amount > 0:
+        raise HTTPException(
+            status_code=400,
+            detail='Запрещено удаление проектов, в которые уже внесены средства.',
+        )
+    if closed_project.fully_invested is True:
+        raise HTTPException(
+            status_code=400,
+            detail='Удаление закрытых проектов запрещено',
         )
