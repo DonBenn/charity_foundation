@@ -29,7 +29,7 @@ async def get_charity_project_by_name(
     db_project_id = await session.execute(
         select(CharityProject.id).where(CharityProject.name == project_name)
     )
-    db_project_id = db_project_id.scalar() #.first()
+    db_project_id = db_project_id.scalar()
     return db_project_id
 
 
@@ -41,13 +41,13 @@ async def read_all_charity_projects_from_db(
 
 
 async def get_charity_project_by_id(
-        session: AsyncSession,
         charity_id: int,
+        session: AsyncSession,
 ) -> Optional[CharityProject]:
     db_project = await session.execute(select(CharityProject).where(
         CharityProject.id == charity_id)
     )
-    db_project = db_project.scalar().first()
+    db_project = db_project.scalar()
     return db_project
 
 

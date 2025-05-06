@@ -15,14 +15,13 @@ class DonationCreate(BaseModel):
             )
         return value
 
-    class Config:
-        title = 'Класс для приветствия'
-        min_anystr_length = 1
-
 
 class DonationCreatedResponse(DonationCreate):
-    id: int = Field(...)
-    create_date: datetime = Field(...)
+    full_amount: int = Field(...)
+    comment: Optional[str]
+
+    class Config:
+        orm_mode = True
 
 
 class DonationDB(BaseModel):

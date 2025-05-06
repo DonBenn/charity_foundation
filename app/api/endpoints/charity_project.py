@@ -1,6 +1,7 @@
 from typing import List
 
 from fastapi import APIRouter, HTTPException, Depends
+from sqlalchemy import select
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -64,6 +65,8 @@ async def partially_update_charity_project(
     if obj_in.name is not None:
         await check_name_duplicate(obj_in.name, session)
 
+    charity_project = await check_full_amount(project_id, obj_in.full_amount, session)
+
     charity_project = await update_charity_project(charity_project, obj_in, session)
     return charity_project
 
@@ -104,6 +107,21 @@ async def check_name_duplicate(
     project_id = await get_charity_project_by_name(charity_project_name, session)
     if project_id is not None:
         raise HTTPException(
-            status_code=422,
+            status_code=400,
             detail='Проект с таким именем уже существует!',
+        )
+
+async def check_full_amount(
+        project_id: int,
+        full_amount_to_upgrade: int,
+        session: AsyncSession
+):
+    db_project = await session.execute(select(CharityProject).where(
+        CharityProject.id == project_id)
+    )
+    db_project = db_project.scalar()
+    if full_amount_to_upgrade < db_project.full_amount:
+        raise HTTPException(
+            status_code=400,
+            detail='Нельзя установить требуемую сумму меньше уже вложенной',
         )

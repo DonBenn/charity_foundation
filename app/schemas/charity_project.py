@@ -28,8 +28,6 @@ class CharityProjectDB(CharityProjectCreate):
     invested_amount: int
     fully_invested: bool
     create_date: datetime
-    # close_date: datetime
-
 
     class Config:
         orm_mode = True
