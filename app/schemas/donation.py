@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, Field, validator, root_validator
+from pydantic import BaseModel, Field, validator, root_validator, Extra
 
 
 class DonationCreate(BaseModel):
@@ -15,10 +15,14 @@ class DonationCreate(BaseModel):
             )
         return value
 
+    class Config:
+        extra = Extra.forbid
 
 class DonationCreatedResponse(DonationCreate):
     full_amount: int = Field(...)
     comment: Optional[str]
+    create_date: datetime
+    id: int
 
     class Config:
         orm_mode = True
@@ -32,7 +36,6 @@ class DonationDB(BaseModel):
     invested_amount: int
     fully_invested: bool
     create_date: datetime
-    close_date: datetime
 
     class Config:
         orm_mode = True

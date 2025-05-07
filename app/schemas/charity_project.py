@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, Field, validator, root_validator
+from pydantic import BaseModel, Field, validator, root_validator, Extra
 
 
 class CharityProjectBase(BaseModel):
@@ -17,8 +17,9 @@ class CharityProjectBase(BaseModel):
         return value
 
     class Config:
-        title = 'Класс для приветствия'
+        # title = 'Класс для приветствия'
         min_anystr_length = 2
+        extra = Extra.forbid
 
 class CharityProjectCreate(CharityProjectBase):
     pass

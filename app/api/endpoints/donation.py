@@ -3,6 +3,7 @@ from typing import List
 from fastapi import APIRouter, HTTPException, Depends
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.util.langhelpers import repr_tuple_names
 
 from app.core.db import get_async_session
 from app.core.user import current_user, current_superuser
@@ -17,14 +18,31 @@ router = APIRouter()
 @router.post(
     '/',
         response_model=DonationCreatedResponse,
-        response_model_exclude_none=True
+        response_model_exclude_none=True,
 )
 async def create_new_donation(
         donation: DonationCreate,
         session: AsyncSession = Depends(get_async_session),
 ):
     check_donation = await make_donation(donation, session)
-    new_donation = await create_donation(donation, session)
+
+    if check_donation is None:
+        new_donation = await create_donation(donation, session) #, user)
+        new_donation.invested_amount += donation.full_amount
+        session.add(new_donation)
+        await session.commit()
+        await session.refresh(new_donation)
+        return new_donation
+
+    if check_donation is not False:
+        new_donation = await create_donation(donation, session) #, user)
+        new_donation.invested_amount += check_donation
+        session.add(new_donation)
+        await session.commit()
+        await session.refresh(new_donation)
+        return new_donation
+
+    new_donation = await create_donation(donation, session) #, user)
     return new_donation
 
 
