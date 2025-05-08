@@ -199,7 +199,7 @@ def test_donations_cant_be_updated(donation, client, user_role):
         (pytest.lazy_fixture('user_client'), 'пользователя'),
         (pytest.lazy_fixture('test_client'), 'анонимного пользователя'),
     ],
-    ids=['superuser', 'user.py', 'anonymous'],
+    ids=['superuser', 'user', 'anonymous'],
 )
 def test_donations_cant_be_deleted(donation, client, user_role):
     response = client.delete(

@@ -1,16 +1,9 @@
 from datetime import datetime
-from typing import Optional
 
-from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.db import AsyncSessionLocal
-from app.crud.donation import create_donation
-from app.models import Donation, CharityProject
 from app.models.charity_project import CharityProject
-from app.schemas.charity_project import CharityProjectCreate, \
-    CharityProjectUpdate, CharityProjectDB
 
 
 async def make_donation(donation, session: AsyncSession):

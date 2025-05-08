@@ -8,7 +8,7 @@ from sqlalchemy.util.langhelpers import repr_tuple_names
 
 from app.core.db import get_async_session
 from app.core.user import current_user, current_superuser
-from app.crud.donation import create_donation, read_all_donations_from_db, get_by_user
+from app.crud.donation import donation_crud
 from app.models import User, Donation
 from app.schemas.donation import DonationCreate, DonationDB, DonationCreatedResponse
 from app.services.services import make_donation
@@ -29,7 +29,7 @@ async def create_new_donation(
     check_donation = await make_donation(donation, session)
 
     if check_donation is None:
-        new_donation = await create_donation(donation, session, user)
+        new_donation = await donation_crud.create(donation, session, user)
         new_donation.invested_amount += donation.full_amount
         session.add(new_donation)
         await session.commit()
@@ -37,7 +37,7 @@ async def create_new_donation(
         return new_donation
 
     if check_donation is not False:
-        new_donation = await create_donation(donation, session, user)
+        new_donation = await donation_crud.create(donation, session, user)
         if type(check_donation) == int:
             new_donation.invested_amount = donation.full_amount - check_donation
             if new_donation.invested_amount >= new_donation.full_amount:
@@ -51,7 +51,7 @@ async def create_new_donation(
         await session.refresh(new_donation)
         return new_donation
 
-    new_donation = await create_donation(donation, session, user)
+    new_donation = await donation_crud.create(donation, session, user)
     return new_donation
 
 
@@ -65,7 +65,7 @@ async def get_donations(
     session: AsyncSession = Depends(get_async_session),
 ):
     """Только для суперюзеров."""
-    all_donations = await read_all_donations_from_db(session)
+    all_donations = await donation_crud.get_multi(session)
     return all_donations
 
 
@@ -79,7 +79,7 @@ async def get_my_donations(
         user: User = Depends(current_user)
 ):
     """Получает список всех пожертвований для текущего пользователя."""
-    donations = await get_by_user(
+    donations = await donation_crud.get_by_user(
         session=session, user=user
     )
     return donations
