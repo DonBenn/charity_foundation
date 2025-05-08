@@ -1,3 +1,5 @@
+from typing import Optional
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -8,8 +10,11 @@ from app.schemas.donation import DonationCreate, DonationDB, DonationCreatedResp
 async def create_donation(
         donation: DonationCreate,
         session: AsyncSession,
+        user: Optional[User] = None
 ) -> Donation:
     new_donation = donation.dict()
+    if user is not None:
+        new_donation['user_id'] = user.id
     db_donation = Donation(**new_donation)
     session.add(db_donation)
     await session.commit()
@@ -18,7 +23,8 @@ async def create_donation(
 
 
 async def get_by_user(
-        self, session: AsyncSession, user: User
+        session: AsyncSession,
+        user: User
 ):
     donations = await session.execute(
         select(Donation).where(

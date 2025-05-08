@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List
 
 from fastapi import APIRouter, HTTPException, Depends
@@ -23,11 +24,12 @@ router = APIRouter()
 async def create_new_donation(
         donation: DonationCreate,
         session: AsyncSession = Depends(get_async_session),
+        user: User = Depends(current_user),
 ):
     check_donation = await make_donation(donation, session)
 
     if check_donation is None:
-        new_donation = await create_donation(donation, session) #, user)
+        new_donation = await create_donation(donation, session, user)
         new_donation.invested_amount += donation.full_amount
         session.add(new_donation)
         await session.commit()
@@ -35,14 +37,21 @@ async def create_new_donation(
         return new_donation
 
     if check_donation is not False:
-        new_donation = await create_donation(donation, session) #, user)
-        new_donation.invested_amount += check_donation
+        new_donation = await create_donation(donation, session, user)
+        if type(check_donation) == int:
+            new_donation.invested_amount = donation.full_amount - check_donation
+            if new_donation.invested_amount >= new_donation.full_amount:
+                new_donation.fully_invested = True
+        else:
+            new_donation.invested_amount = new_donation.full_amount
+            new_donation.fully_invested = True
+            new_donation.close_date = datetime.now()
         session.add(new_donation)
         await session.commit()
         await session.refresh(new_donation)
         return new_donation
 
-    new_donation = await create_donation(donation, session) #, user)
+    new_donation = await create_donation(donation, session, user)
     return new_donation
 
 

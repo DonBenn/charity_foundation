@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel, Field, validator, root_validator, Extra
 
@@ -9,7 +10,7 @@ class CharityProjectBase(BaseModel):
     full_amount: int = Field(...)
 
     @validator('full_amount')
-    def check_from_create_date_later_than_now(cls, value):
+    def check_full_amount(cls, value):
         if value < 1:
             raise ValueError(
                 'Сумма должна быть больше 1'
@@ -17,7 +18,6 @@ class CharityProjectBase(BaseModel):
         return value
 
     class Config:
-        # title = 'Класс для приветствия'
         min_anystr_length = 2
         extra = Extra.forbid
 
@@ -34,7 +34,9 @@ class CharityProjectDB(CharityProjectCreate):
         orm_mode = True
 
 class CharityProjectUpdate(CharityProjectBase):
-    pass
+    name: Optional[str] = Field(None, max_length=100)
+    description: Optional[str] = None
+    full_amount: Optional[int] = None
 
     @validator('name')
     def name_cannot_be_null(cls, value):

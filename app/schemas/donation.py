@@ -30,7 +30,7 @@ class DonationCreatedResponse(DonationCreate):
 
 class DonationDB(BaseModel):
     id: int
-    user_id: int
+    user_id: Optional[int]
     full_amount: int
     comment: str
     invested_amount: int

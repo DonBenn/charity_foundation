@@ -25,24 +25,23 @@ async def make_donation(donation, session: AsyncSession):
         return None
 
     if open_project:
-        open_project.invested_amount += donation.full_amount
-
-        if open_project.invested_amount >= open_project.full_amount:
+        needed_amount = open_project.full_amount - open_project.invested_amount
+        if donation.full_amount >= needed_amount:
+            open_project.invested_amount = open_project.full_amount
             open_project.fully_invested = True
             open_project.close_date = datetime.now()
+            difference = donation.full_amount - needed_amount
             session.add(open_project)
-            await session.commit()
-            await session.refresh(open_project)
-
-            difference = open_project.invested_amount - open_project.full_amount
+            # await session.commit()
+            # await session.refresh(open_project)
             return difference
-
-        session.add(open_project)
-        await session.commit()
-        await session.refresh(open_project)
-        return False
-
-        return None
+        else:
+            open_project.invested_amount += donation.full_amount
+            session.add(open_project)
+            # await session.commit()
+            # await session.refresh(open_project)
+            return True
+        # return None
     return None
 
 
