@@ -1,58 +1,32 @@
-from datetime import datetime
 from typing import List
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, Depends
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.util.langhelpers import repr_tuple_names
 
 from app.core.db import get_async_session
 from app.core.user import current_user, current_superuser
 from app.crud.donation import donation_crud
-from app.models import User, Donation
+from app.models import User
 from app.schemas.donation import DonationCreate, DonationDB, DonationCreatedResponse
-from app.services.services import make_donation
+from app.services.services import calculate_donation, add_to_donation
 
 router = APIRouter()
 
 
 @router.post(
     '/',
-        response_model=DonationCreatedResponse,
-        response_model_exclude_none=True,
+    response_model=DonationCreatedResponse,
+    response_model_exclude_none=True,
 )
 async def create_new_donation(
         donation: DonationCreate,
         session: AsyncSession = Depends(get_async_session),
         user: User = Depends(current_user),
 ):
-    check_donation = await make_donation(donation, session)
-
-    if check_donation is None:
-        new_donation = await donation_crud.create(donation, session, user)
-        new_donation.invested_amount += donation.full_amount
-        session.add(new_donation)
-        await session.commit()
-        await session.refresh(new_donation)
-        return new_donation
-
-    if check_donation is not False:
-        new_donation = await donation_crud.create(donation, session, user)
-        if type(check_donation) == int:
-            new_donation.invested_amount = donation.full_amount - check_donation
-            if new_donation.invested_amount >= new_donation.full_amount:
-                new_donation.fully_invested = True
-        else:
-            new_donation.invested_amount = new_donation.full_amount
-            new_donation.fully_invested = True
-            new_donation.close_date = datetime.now()
-        session.add(new_donation)
-        await session.commit()
-        await session.refresh(new_donation)
-        return new_donation
-
+    calculated_donation = await calculate_donation(donation.full_amount, session)
     new_donation = await donation_crud.create(donation, session, user)
-    return new_donation
+    return await add_to_donation(new_donation, donation, calculated_donation, session)
 
 
 @router.get(
@@ -62,11 +36,10 @@ async def create_new_donation(
     dependencies=[Depends(current_superuser)],
 )
 async def get_donations(
-    session: AsyncSession = Depends(get_async_session),
+        session: AsyncSession = Depends(get_async_session),
 ):
     """Только для суперюзеров."""
-    all_donations = await donation_crud.get_multi(session)
-    return all_donations
+    return await donation_crud.get_multi(session)
 
 
 @router.get(
