@@ -2,9 +2,9 @@ from datetime import datetime
 
 from http import HTTPStatus
 from fastapi import HTTPException
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.constants import MIN_FULL_AMOUNT_VALUE
 from app.crud.charity_project import charity_project_crud
 from app.models import CharityProject
 
@@ -52,36 +52,20 @@ async def check_full_amount(
     return db_project
 
 
-async def check_closed_or_invested_project_for_deletion(
-        project_id: int,
+async def check_before_deletion(
+        charity_project_id: int,
         session: AsyncSession,
-) -> None:
-    closed_project = await session.execute(select(CharityProject).where(
-        CharityProject.id == project_id)
-    )
-    closed_project = closed_project.scalar()
-    if closed_project.fully_invested:
+) -> CharityProject:
+    charity_project = await charity_project_crud.get(charity_project_id,
+                                                     session)
+    if charity_project.fully_invested:
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
             detail='Удаление закрытых проектов запрещено',
         )
-    if closed_project.invested_amount > 0:
+    if charity_project.invested_amount > MIN_FULL_AMOUNT_VALUE:
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
             detail='Запрещено удаление проектов, в которые уже внесены средства.',
         )
-
-
-async def check_closed_or_invested_for_upgrade(
-        project_id: int,
-        session: AsyncSession,
-) -> None:
-    closed_project = await session.execute(select(CharityProject).where(
-        CharityProject.id == project_id)
-    )
-    closed_project = closed_project.scalar()
-    if closed_project.fully_invested:
-        raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST,
-            detail='Нельзя редактировать закрытый проект',
-        )
+    return charity_project

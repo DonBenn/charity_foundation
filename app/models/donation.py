@@ -1,7 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Column, String, Text, DateTime, Integer, Boolean, \
-    ForeignKey
+from sqlalchemy import Column, Text, DateTime, Integer, Boolean, ForeignKey
 
 from app.core.constants import DEFAULT_INVESTED_AMOUNT_VALUE
 from app.core.db import Base

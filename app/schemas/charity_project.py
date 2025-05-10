@@ -1,6 +1,8 @@
 from datetime import datetime
+from http import HTTPStatus
 from typing import Optional
 
+from fastapi import HTTPException
 from pydantic import BaseModel, Field, validator, root_validator, Extra
 
 from app.core.constants import MAX_PROJECT_NAME_LENGTH, MIN_FULL_AMOUNT_VALUE, \
@@ -34,6 +36,7 @@ class CharityProjectDB(CharityProjectCreate):
     invested_amount: int
     fully_invested: bool
     create_date: datetime
+    close_date: datetime = None
 
     class Config:
         orm_mode = True
@@ -49,3 +52,16 @@ class CharityProjectUpdate(CharityProjectBase):
         if value is None:
             raise ValueError('Имя проекта не может быть пустым!')
         return value
+
+    @root_validator(pre=True)
+    def check_forbidden_fields(cls, values):
+        forbidden_fields = {
+            "invested_amount", "create_date", "close_date", "fully_invested"
+        }
+        for field in forbidden_fields:
+            if field in values:
+                raise HTTPException(
+                    status_code=HTTPStatus.UNPROCESSABLE_ENTITY,
+                    detail=f'Нельзя изменять поле {field}',
+                )
+        return values

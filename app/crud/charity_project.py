@@ -17,7 +17,7 @@ class CRUDCharityProject(CRUDBase):
         db_project_id = await session.execute(
             select(CharityProject.id).where(CharityProject.name == project_name)
         )
-        db_project_id = db_project_id.scalar()#.first()
+        db_project_id = db_project_id.scalars().first()
         return db_project_id
 
 
