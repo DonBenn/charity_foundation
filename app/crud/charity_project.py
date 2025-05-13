@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 
 from sqlalchemy import select
@@ -19,6 +20,31 @@ class CRUDCharityProject(CRUDBase):
         )
         db_project_id = db_project_id.scalars().first()
         return db_project_id
+
+
+    async def get_projects_by_completion_rate(
+            self,
+            session: AsyncSession,
+    ) -> list[dict[str, str, datetime]]:
+        projects = await session.execute(
+            select(
+                CharityProject
+            ).where(
+                CharityProject.fully_invested.is_(True)
+            )
+        )
+        projects = projects.scalars().all()
+        data = []
+        for element in projects:
+            difference = element.close_date - element.create_date
+            data.append(
+                {'name': element.name,
+                 'time': difference,
+                 'description': element.description
+                 }
+            )
+        data = sorted(data, key=lambda x: x['time'])
+        return data
 
 
 charity_project_crud = CRUDCharityProject(CharityProject)
