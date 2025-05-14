@@ -6,6 +6,9 @@
 Реализованы CRUD-операции для модели проектов (Charity Project) и для их пожертвований (Donation), 
 а также для регистрации и авторизации пользователей. 
 
+Добавлена возможность вывода отчёта, о том какие проекты быстрее всего закрываются,
+в Google таблицы с использованием Google API
+
 ### Проекты
 
 В Фонде может быть открыто несколько целевых проектов. У каждого проекта есть название, 
@@ -31,7 +34,7 @@
 
 ### Используемые технологии:
 
-* FastAPI, SQLAlchemy, Alembic, Uvicorn, FastAPI Users, Pydantic
+* FastAPI, SQLAlchemy, Alembic, Uvicorn, FastAPI Users, Pydantic, Aiogoogle, Google-api
 
 ### Как запустить проект:
 
@@ -110,6 +113,33 @@ uvicorn app.main:app --reload
 
 
 * Документация **ReDoc**  <http://127.0.0.1:8000/redoc>
+
+
+
+### Доступные эндпоинты
+
+
+#### Charity Project
+
+- **GET** /charity_project/  Get All Charity Projects
+
+- **POST** /charity_project/ Create New Charity Project
+
+- **DELETE** /charity_project/{project_id} Remove Charity Project
+
+- **PATCH** /charity_project/{project_id}  Partially Update Charity Project
+
+#### Donation
+
+- **GET** /donation/ Get Donations
+
+- **POST** /donation/ Create New Donation
+
+- **GET** /donation/my  Get My Donations
+
+#### Google 
+
+- **POST** /google/ Get Report
 
 
 

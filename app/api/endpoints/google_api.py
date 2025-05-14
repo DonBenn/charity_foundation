@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from aiogoogle import Aiogoogle
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,6 +7,7 @@ from app.core.google_client import get_service
 from app.core.user import current_superuser
 
 from app.crud.charity_project import charity_project_crud
+from app.schemas.charity_project import CharityProjectDB
 from app.services.google_api import spreadsheets_create, set_user_permissions, \
     spreadsheets_update_value
 
@@ -16,7 +15,7 @@ router = APIRouter()
 
 @router.post(
     '/',
-    # response_model=list[dict[str, str, datetime]],
+    response_model=list[CharityProjectDB],
     dependencies=[Depends(current_superuser)],
 )
 async def get_report(
